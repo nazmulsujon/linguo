@@ -1,7 +1,10 @@
 import { ChevronRight } from "lucide-react";
-import { Separator } from "./components/ui/separator";
-import CorrectPage from "./components/correct/CorrectPage";
 import { useState } from "react";
+import { Separator } from "./components/ui/separator";
+import CorrectPage from "./components/correct-page/CorrectPage";
+import TranslatePage from "./components/translate-page/TranslatePage";
+import SummarizePage from "./components/summarize-page/SummarizePage";
+import EnhancePage from "./components/enhance-page/EnhancePage";
 
 function App() {
   const contentLists = [
@@ -29,13 +32,15 @@ function App() {
               {contentLists.map((list, index) => (
                 <li key={index} className="flex justify-between p-4">
                   <p className="font-bold capitalize">{list}</p>
-                  <button
-                    onClick={() => {
-                      setContent(list);
-                    }}
-                  >
-                    <ChevronRight />
-                  </button>
+                  {list != "about" && (
+                    <button
+                      onClick={() => {
+                        setContent(list);
+                      }}
+                    >
+                      <ChevronRight />
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>
@@ -45,7 +50,6 @@ function App() {
         {content === "translate" && <TranslatePage setContent={setContent} />}
         {content === "summarize" && <SummarizePage setContent={setContent} />}
         {content === "enhance" && <EnhancePage setContent={setContent} />}
-        {content === "about" && <AboutPage setContent={setContent} />}
       </div>
     </div>
   );
