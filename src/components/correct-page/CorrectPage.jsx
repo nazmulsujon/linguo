@@ -2,31 +2,42 @@ import React from "react";
 import Header from "../common/Header";
 import { Separator } from "../ui/separator";
 import { Button } from "../ui/button";
+import { URLS } from "@/App";
+
+const gotoPage = (value, type) => {
+  let url_obr = new URL(URLS.correct);
+  url_obr.searchParams.append("textcorrect", value);
+  url_obr.searchParams.append("dynamic_tool_id", 273);
+  url_obr.searchParams.append("action", "custom_dynamic_tools_result");
+  chrome.tabs.create({
+    url: url_obr.toString(),
+  });
+};
 
 const CorrectPage = ({ setContent }) => {
+  const [value, setValue] = React.useState("");
   return (
     <div className="h-full">
-      <Header title="Correct" />
+      <Header setContent={setContent} title="Correct" />
 
       <Separator className="bg-black/70" />
 
       <div
-        className="max-h-[295px] overflow-y-auto p-4"
-        style={{ scrollbarWidth: "thin", height: "295px" }}
+        className="h-[18.4375rem] overflow-y-auto p-4"
+        style={{ scrollbarWidth: "thin", height: "18.4375rem" }}
       >
-        <p className="text-justify">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero sapiente
-          veritatis accusantium tempore reiciendis doloremque harum, officiis
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero sapiente
-          veritatis accusantium tempore reiciendis doloremque harum, officiis
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero sapiente
-          veritatis accusantium tempore reiciendis doloremque harum, officiis
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero sapiente
-          veritatis accusantium tempore reiciendis doloremque harum, officiis
-        </p>
+        <textarea
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          className="w-full h-full text-justify border-none outline-none"
+          style={{
+            overflow: "auto",
+            resize: "none",
+          }}
+        />
       </div>
 
-      <div className="absolute bottom-0 flex justify-between items-center w-full h-[40px] border-t border-t-black/70">
+      <div className="absolute bottom-0 flex justify-between items-center w-full h-[2.5rem] border-t border-t-black/70">
         <Button
           className="w-1/2 hover:bg-transparent"
           variant="ghost"
@@ -37,7 +48,13 @@ const CorrectPage = ({ setContent }) => {
           Go Back
         </Button>
         <Separator orientation="vertical" className="bg-black/70" />
-        <Button className="w-1/2 hover:bg-transparent" variant="ghost">
+        <Button
+          onClick={() => {
+            gotoPage(value);
+          }}
+          className="w-1/2 hover:bg-transparent"
+          variant="ghost"
+        >
           Generate
         </Button>
       </div>

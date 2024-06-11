@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Header from "../common/Header";
 import { Separator } from "../ui/separator";
 import { Button } from "../ui/button";
@@ -12,38 +12,61 @@ import {
   CommandList,
 } from "../ui/command";
 import { ChevronsUpDown } from "lucide-react";
+import { URLS } from "@/App";
 
 const interestDescriptors = [
   {
     name: "Complelling",
-    value: "complelling",
+    value: "Complelling",
   },
   {
-    name: "Engaging",
-    value: "engaging",
+    name: "Accessible",
+    value: "Accessible",
   },
   {
-    name: "Absorbing",
-    value: "absorbing",
+    name: "Eloquent",
+    value: "Eloquent",
   },
   {
-    name: "Interesting",
-    value: "interesting",
+    name: "Entertaining",
+    value: "Entertaining",
+  },
+  {
+    name: "Professional",
+    value: "Professional",
   },
 ];
 
+const gotoPage = (value, type) => {
+  let url_obr = new URL(URLS.enhance);
+  url_obr.searchParams.append("textdescription", type);
+  url_obr.searchParams.append("textenhance", value);
+  url_obr.searchParams.append("dynamic_tool_id", 277);
+  url_obr.searchParams.append("action", "custom_dynamic_tools_result");
+
+  chrome.tabs.create({
+    url: url_obr.toString(),
+  });
+};
+
 const EnhancePage = ({ setContent }) => {
   const [popoverOpen, setPopoverOpen] = useState(false);
-  const [value, setValue] = useState("complelling");
-  console.log("value", value);
+  const [type, setType] = useState(
+    localStorage.getItem("enhance") || "complelling"
+  );
+  const [value, setValue] = useState("");
+
+  useEffect(() => {
+    localStorage.setItem("enhance", type);
+  }, [type]);
   return (
     <div className="h-full">
-      <Header title="Enhance" />
+      <Header setContent={setContent} title="Enhance" />
 
       <Separator className="bg-black/70" />
 
-      <div className="relative max-h-[295px]">
-        <div className="ablsolute left-0 top-0 flex justify-between items-center w-full h-[40px]">
+      <div className="relative max-h-[18.4375rem]">
+        <div className="ablsolute left-0 top-0 flex justify-between items-center w-full h-[2.5rem]">
           <span className="w-[40%] text-center">Make it more</span>
           <Separator orientation="vertical" className="bg-black/70" />
           <div className="grid gap-4 py-4 w-[60%]">
@@ -55,8 +78,8 @@ const EnhancePage = ({ setContent }) => {
                   aria-expanded={popoverOpen}
                   className="w-full justify-between hover:bg-transparent"
                 >
-                  {value
-                    ? interestDescriptors.find((item) => item.value === value)
+                  {type
+                    ? interestDescriptors.find((item) => item.value === type)
                         ?.name
                     : "Select..."}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -73,9 +96,7 @@ const EnhancePage = ({ setContent }) => {
                           key={index}
                           value={item.value}
                           onSelect={(currentValue) => {
-                            setValue(
-                              currentValue === value ? "" : currentValue
-                            );
+                            setType(currentValue === type ? "" : item.value);
                             setPopoverOpen(false);
                           }}
                         >
@@ -91,24 +112,22 @@ const EnhancePage = ({ setContent }) => {
         </div>
         <Separator className="bg-black/70" />
         <div
-          className="max-h-[255px] overflow-y-auto p-4"
+          className="h-[15.9375rem] overflow-y-auto p-4"
           style={{ scrollbarWidth: "thin" }}
         >
-          <p className="text-justify">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero
-            sapiente veritatis accusantium tempore reiciendis doloremque harum,
-            officiis Lorem ipsum dolor sit amet consectetur adipisicing elit.
-            Vero sapiente veritatis accusantium tempore reiciendis doloremque
-            harum, officiis Lorem ipsum dolor sit amet consectetur adipisicing
-            elit. Vero sapiente veritatis accusantium tempore reiciendis
-            doloremque harum, officiis Lorem ipsum dolor sit amet consectetur
-            adipisicing elit. Vero sapiente veritatis accusantium tempore
-            reiciendis doloremque harum, officiis
-          </p>
+          <textarea
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            className="w-full h-full text-justify border-none outline-none"
+            style={{
+              overflow: "auto",
+              resize: "none",
+            }}
+          />
         </div>
       </div>
 
-      <div className="absolute bottom-0 flex justify-between items-center w-full h-[40px] border-t border-t-black/70">
+      <div className="absolute bottom-0 flex justify-between items-center w-full h-[2.5rem] border-t border-t-black/70">
         <Button
           onClick={() => setContent("home")}
           className="w-1/2 hover:bg-transparent"
@@ -117,7 +136,11 @@ const EnhancePage = ({ setContent }) => {
           Go Back
         </Button>
         <Separator orientation="vertical" className="bg-black/70" />
-        <Button className="w-1/2 hover:bg-transparent" variant="ghost">
+        <Button
+          onClick={() => gotoPage(value, type)}
+          className="w-1/2 hover:bg-transparent"
+          variant="ghost"
+        >
           Generate
         </Button>
       </div>
