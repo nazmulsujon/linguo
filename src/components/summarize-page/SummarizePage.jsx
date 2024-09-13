@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Header from "../common/Header";
 import { Separator } from "../ui/separator";
 import { Button } from "../ui/button";
@@ -11,70 +11,99 @@ import {
   CommandItem,
   CommandList,
 } from "../ui/command";
-import { ChevronsUpDown } from "lucide-react";
+import { ChevronsUpDown, Dot } from "lucide-react";
+import { URLS } from "@/App";
 
 const summaryLength = [
+  {
+    name: "25 words",
+    value: "25",
+  },
+  {
+    name: "50 words",
+    value: "50",
+  },
+  {
+    name: "75 words",
+    value: "75",
+  },
+  {
+    name: "100 words",
+    value: "100",
+  },
   {
     name: "150 words",
     value: "150",
   },
-  {
-    name: "200 words",
-    value: "200",
-  },
-  {
-    name: "350 words",
-    value: "300",
-  },
 ];
+
+const gotoPage = (value, type) => {
+  let url_obr = new URL(URLS.summarize);
+  url_obr.searchParams.append("wordsnumber", type + " words");
+  url_obr.searchParams.append("summarizationtext", value);
+  url_obr.searchParams.append("dynamic_tool_id", 263);
+
+  url_obr.searchParams.append("action", "custom_dynamic_tools_result");
+
+  chrome.tabs.create({
+    url: url_obr.toString(),
+  });
+};
 
 const SummarizePage = ({ setContent }) => {
   const [popoverOpen, setPopoverOpen] = useState(false);
-  const [value, setValue] = useState("150");
-  console.log("value", value);
+  const [type, setType] = useState(localStorage.getItem("summarize") || "150");
+  const [value, setValue] = useState("");
+
+  useEffect(() => {
+    localStorage.setItem("summarize", type);
+  }, [type]);
+
   return (
     <div className="h-full">
-      <Header title="Summarize" />
+      <Header setContent={setContent} title="Summarize" />
 
       <Separator className="bg-black/70" />
 
-      <div className="relative max-h-[295px]">
-        <div className="ablsolute left-0 top-0 flex justify-between items-center w-full h-[40px]">
-          <span className="w-1/3 text-center">To</span>
+      <div className="relative max-h-[18.4375rem]">
+        <div className="ablsolute left-0 top-0 flex justify-between items-center w-full h-[2.5rem]">
+          <span className="w-1/3 text-center">In</span>
           <Separator orientation="vertical" className="bg-black/70" />
           <div className="grid gap-4 py-4 w-full">
-            <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+            <Popover
+              className="w-full"
+              open={popoverOpen}
+              onOpenChange={setPopoverOpen}
+            >
               <PopoverTrigger asChild>
                 <Button
                   variant="ghost"
                   role="combobox"
                   aria-expanded={popoverOpen}
-                  className="w-full justify-between hover:bg-transparent"
+                  className=" justify-between hover:bg-transparent"
                 >
-                  {value
-                    ? summaryLength.find((item) => item.value === value)?.name
+                  {type
+                    ? summaryLength.find((item) => item.value === type)?.name
                     : "Select length..."}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-full p-0" align="start">
-                <Command className="max-h-64">
-                  <CommandInput placeholder="Search" />
+                <Command className="max-h-64 w-full">
+                  {/* <CommandInput placeholder="Search" /> */}
                   <CommandList>
-                    <CommandEmpty>No results found.</CommandEmpty>
-                    <CommandGroup heading="Suggestions">
+                    {/* <CommandEmpty>No results found.</CommandEmpty> */}
+                    <CommandGroup className="w-full">
                       {summaryLength.map((item, index) => (
                         <CommandItem
                           key={index}
                           value={item.value}
                           onSelect={(currentValue) => {
-                            setValue(
-                              currentValue === value ? "" : currentValue
-                            );
+                            setType(currentValue === type ? "" : currentValue);
                             setPopoverOpen(false);
                           }}
                         >
-                          {item.name}
+                          <Dot /> {item.name}
                         </CommandItem>
                       ))}
                     </CommandGroup>
@@ -86,24 +115,22 @@ const SummarizePage = ({ setContent }) => {
         </div>
         <Separator className="bg-black/70" />
         <div
-          className="max-h-[255px] overflow-y-auto p-4"
+          className="h-[15.9375rem] overflow-y-auto p-4"
           style={{ scrollbarWidth: "thin" }}
         >
-          <p className="text-justify">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero
-            sapiente veritatis accusantium tempore reiciendis doloremque harum,
-            officiis Lorem ipsum dolor sit amet consectetur adipisicing elit.
-            Vero sapiente veritatis accusantium tempore reiciendis doloremque
-            harum, officiis Lorem ipsum dolor sit amet consectetur adipisicing
-            elit. Vero sapiente veritatis accusantium tempore reiciendis
-            doloremque harum, officiis Lorem ipsum dolor sit amet consectetur
-            adipisicing elit. Vero sapiente veritatis accusantium tempore
-            reiciendis doloremque harum, officiis
-          </p>
+          <textarea
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            className="w-full h-full text-justify border-none outline-none"
+            style={{
+              overflow: "auto",
+              resize: "none",
+            }}
+          />
         </div>
       </div>
 
-      <div className="absolute bottom-0 flex justify-between items-center w-full h-[40px] border-t border-t-black/70">
+      <div className="absolute bottom-0 flex justify-between items-center w-full h-[2.5rem] border-t border-t-black/70">
         <Button
           onClick={() => setContent("home")}
           className="w-1/2 hover:bg-transparent"
@@ -112,7 +139,13 @@ const SummarizePage = ({ setContent }) => {
           Go Back
         </Button>
         <Separator orientation="vertical" className="bg-black/70" />
-        <Button className="w-1/2 hover:bg-transparent" variant="ghost">
+        <Button
+          onClick={() => {
+            gotoPage(value, type);
+          }}
+          className="w-1/2 hover:bg-transparent"
+          variant="ghost"
+        >
           Generate
         </Button>
       </div>
